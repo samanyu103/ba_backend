@@ -14,7 +14,9 @@ function caesarCipher(input) {
     const lowerAlphabet = alphabet.toLowerCase();
     const shiftedLowerAlphabet = lowerAlphabet.slice(shift) + lowerAlphabet.slice(0, shift);
 
+    // let output = '';
     let output = '';
+
 
     for (let char of input) {
         if (alphabet.includes(char)) {
