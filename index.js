@@ -81,6 +81,7 @@ app.post("/login", async (req, res) => {
 
   const user = snapshots.docs[0].data();
 
+  // Validate password
   if (user.password === caesarCipher(password)) {
     return res.send({ email: user.email, login: true, reason: null });
   } else {
