@@ -1,9 +1,11 @@
 const express = require("express");
 var bodyParser = require('body-parser');
-var serviceAccount = require("./auth-samm-firebase-adminsdk-kk62o-84fffbb742.json");
+var serviceAccount = require("./babackend-64023-firebase-adminsdk-2n89e-3ee4f568ae.json");
 var admin = require("firebase-admin");
-const { getAuth } = require("firebase-admin/auth");
 const {getFirestore} = require("firebase-admin/firestore");
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
+
 function generateGuid() {
     return Math.random().toString(26).substring(2, 15) +Math.random().toString(26).substring(2, 15);
 }
@@ -34,10 +36,10 @@ function caesarCipher(input) {
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
-const auth = getAuth();
+// const auth = getAuth();
 const firestore = getFirestore();
 const app = express();
-const port = 3000;
+const port = 3001;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }))
 app.get("/",(req,res) => {
@@ -55,55 +57,73 @@ app.post("/searchuser",(req,res) => {
     })
     
 })
-app.post("/registration",(req,res) => {
-    const data = {
-        "username":req.body.username,
-        "password":req.body.password
-    }
-    const uuid = generateGuid();
-    auth.createUser({
-        "uid":uuid,
-        "email":req.body.username,
-        "password":req.body.password,
-    }).then(async i => {
-        const user_data = i
-        const docRef = firestore.collection('user').doc(uuid)
-        await docRef.set({
-            "uid":uuid,
-            "email":req.body.username,
-            "password":caesarCipher(req.body.password),
-            "emailverify":false
-        })
-        auth.generateEmailVerificationLink(req.body.username).then(ij => {
-            console.log(ij);
-        }).catch(err => {
-            console.log(err);
-        })
-    }).catch(err => {
-        console.log(err)
-    })
-    console.log(data); 
-    res.send(data); 
-})
 
+// app.post("/registration",(req,res) => {
+//     const data = {
+//         "username":req.body.username,
+//         "password":req.body.password
+//     }
+//     const uuid = generateGuid();
+//     auth.createUser({
+//         "uid":uuid,
+//         "email":req.body.username,
+//         "password":req.body.password,
+//     }).then(async i => {
+//         const user_data = i
+//         const docRef = firestore.collection('user').doc(uuid)
+//         await docRef.set({
+//             "uid":uuid,
+//             "email":req.body.username,
+//             // "password":caesarCipher(req.body.password),
+//             "password":req.body.password,
+
+//             "emailverify":false
+//         })
+//         auth.generateEmailVerificationLink(req.body.username).then(ij => {
+//             console.log(ij);
+//         }).catch(err => {
+//             console.log(err);
+//         })
+//     }).catch(err => {
+//         console.log(err)
+//     })
+//     console.log(data); 
+//     res.send(data); 
+// })
+
+
+const auth = getAuth();
+createUserWithEmailAndPassword(auth, email, password)
+  .then((userCredential) => {
+    // Signed up 
+    const user = userCredential.user;
+    // ...
+  })
+  .catch((error) => {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    // ..
+  });
 app.post("/login",async (req,res) => {
-    const col = firestore.collection('user')
-    const snapshots = await col.where('email','==',req.body.username).get().then(doc => doc.empty || doc)
-    console.log(snapshots)
-    snapshots.forEach(doc => {
-        console.log(doc)
-        const snapshot = doc.data()
-        console.log(snapshot)
-        if(snapshot){
-            if(snapshot.password === caesarCipher(req.body.password)){
-                res.send({"email":snapshot.email,"login":true,reason:null})
-            }else{
-                res.send({"email":snapshot.email,"login":false,reason:"wrong password"})
-            }
-        }else{
-            res.send({"email":req.body.username,"login":false,reason:"wrong email user not found"})
-        }
-    })
+    // console.log(req.body.username);
+    // const col = firestore.collection('user')
+    // const snapshots = await col.where('email', '==',req.body.username).get().then(doc => doc.empty || doc)
+    // console.log(snapshots)
+    // snapshots.forEach(doc => {
+    //     console.log(doc)
+    //     const snapshot = doc.data()
+    //     console.log(snapshot)
+    //     if(snapshot){
+    //         if(snapshot.password === caesarCipher(req.body.password)){
+    //             res.send({"email":snapshot.email,"login":true,reason:null})
+    //         }else{
+    //             res.send({"email":snapshot.email,"login":false,reason:"wrong password"})
+    //         }
+    //     }else{
+    //         res.send({"email":req.body.username,"login":false,reason:"wrong email user not found"})
+    //     }
+    // })
+
 })
 app.listen(port , () => {
     console.log(`app is running on port ${port}`);
