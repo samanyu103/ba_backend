@@ -1,2 +1,4 @@
 node_modules
 babackend-64023-firebase-adminsdk-2n89e-3ee4f568ae.json
+.env/*
+.env.local
